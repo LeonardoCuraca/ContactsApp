@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-app.js" defer></script>
+    <script src="https://www.gstatic.com/firebasejs/7.14.1/firebase-auth.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@rc/dist/js.cookie.min.js" defer></script>
+  </head>
+  <body>
+    <h1>Welcome</h1>
+    <p>Welcome to <%= title %></p>
+    <button id="googleLogin">Iniciar Sesión con Google</button>
+    <button id="logout">Cerrar Sesión</button>
+  </body>
+  <script>
+    window.addEventListener("DOMContentLoaded", () => {
+      // Your web app's Firebase configuration
+      var firebaseConfig = {
+        apiKey: "AIzaSyByle6QrCt3HBiacG3a2YvnmQ_wxTwG-mM",
+        authDomain: "docker-integration.firebaseapp.com",
+        databaseURL: "https://docker-integration.firebaseio.com",
+        projectId: "docker-integration",
+        storageBucket: "docker-integration.appspot.com",
+        messagingSenderId: "198083086697",
+        appId: "1:198083086697:web:15f71a6455831f7e27d5f8"
+      };
+      // Initialize Firebase
+      firebase.initializeApp(firebaseConfig);
+
+      const auth = firebase.auth();
+
+      auth.onAuthStateChanged(user => {
+        if (user) {
+          console.log(user);
+        } else {
+          console.log("not user");
+        }
+      })
+
+      auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+
+      document.getElementById("googleLogin").addEventListener("click", function() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider).then(() => {
+          window.location.assign("/users/listar");
+        });
+        return false;
+      });
+
+      document.getElementById("logout").addEventListener("click", function() {
+        auth.signOut().then(() => {
+          console.log("sign out");
+        })
+      })
+
+    })
+  </script>
+</html>

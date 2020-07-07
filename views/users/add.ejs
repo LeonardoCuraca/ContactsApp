@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Add Contact</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
+</head>
+<body class="container" style="margin-top: 50px;">
+
+	<% if (messages.error) { %>
+	<div class="alert alert-danger" role="alert"><%- messages.error %></div>
+	<% } %>
+
+    <div class="card">
+    	<div class="card-header">
+			Add Contact
+		</div>
+        <div class="card-body">
+            <div class="form-group">
+                <label>User Name:</label>
+                <input type="text" class="form-control" id="user_name" autocomplete="off">
+            </div>
+						<div class="form-group">
+                <label>Password:</label>
+                <input type="password" class="form-control" id="user_password" autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Real Name:</label>
+                <input type="text" class="form-control" id="user_real_name" autocomplete="off">
+            </div>
+						<div class="form-group">
+                <label>Last Name:</label>
+                <input type="text" class="form-control" id="user_last_name" autocomplete="off">
+            </div>
+						<div class="form-group">
+                <label>Birthday:</label>
+                <input type="date" class="form-control" id="user_birthday" autocomplete="off">
+            </div>
+						<div class="form-group">
+							Upload Files<br />
+							<input type="file" id="files" multiple /><br /><br />
+						</div>
+            <div class="form-group">
+                <button id="send">Upload</button>
+            </div>
+        </div>
+    </div>
+		<script>
+			var firebaseConfig = {
+				apiKey: "AIzaSyByle6QrCt3HBiacG3a2YvnmQ_wxTwG-mM",
+				authDomain: "docker-integration.firebaseapp.com",
+				databaseURL: "https://docker-integration.firebaseio.com",
+				projectId: "docker-integration",
+				storageBucket: "docker-integration.appspot.com",
+				messagingSenderId: "198083086697",
+				appId: "1:198083086697:web:15f71a6455831f7e27d5f8"
+			};
+			// Initialize Firebase
+			firebase.initializeApp(firebaseConfig);
+
+			var files = [];
+			document.getElementById("files").addEventListener("change", function(e) {
+				files = e.target.files;
+			});
+
+			document.getElementById("send").addEventListener("click", function(e) {
+				e.preventDefault();
+
+				let user_name = document.getElementById("user_name").value;
+				let user_password = document.getElementById("user_password").value;
+				let user_real_name = document.getElementById("user_real_name").value;
+				let user_last_name = document.getElementById("user_last_name").value;
+				let user_birthday = document.getElementById("user_birthday").value;
+
+      //checks if files are selected
+      if (files.length != 0) {
+
+      //Loops through all the selected files
+      for (let i = 0; i < files.length; i++) {
+
+        //create a storage reference
+        var storage = firebase.storage().ref(files[i].name);
+
+        //upload file
+        var upload = storage.put(files[i]);
+
+        //update progress bar
+        upload.on(
+          "state_changed",
+					function progress(snapshot) {
+          },
+
+          function error() {
+            alert("error uploading file");
+          },
+
+          function complete() {
+
+						var storage = firebase.storage().ref(files[i].name);
+						//get file url
+						storage
+						.getDownloadURL()
+						.then(function(url) {
+							var data = {
+								user_name: user_name,
+								user_password: user_password,
+								user_real_name: user_real_name,
+								user_last_name: user_last_name,
+								user_profile_picture_url: url,
+								user_birthday: user_birthday
+							}
+						  fetch("/users/", {
+								method: "POST",
+								headers: {'Content-Type': 'application/json'},
+								body: JSON.stringify(data)
+							}).then(function(res) {
+								window.location.assign("/users/listar");
+							})
+						})
+						.catch(function(error) {
+						  console.log("error encountered");
+						});
+          }
+        );
+      }
+      } else {
+      	alert("No file chosen");
+      }
+      });
+		</script>
+</body>
+</html>

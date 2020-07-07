@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>Edit Book</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+	<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/7.13.1/firebase-storage.js"></script>
+</head>
+<body class="container" style="margin-top: 50px;">
+
+	<% if (messages.error) { %>
+	<div class="alert alert-danger" role="alert"><%- messages.error %></div>
+	<% } %>
+
+    <div class="card">
+    	<div class="card-header">
+			Edit <%= data[0].user_name %>'s Profile Picture
+		</div>
+        <div class="card-body">
+						Upload Files<br />
+						<input type="text" id="user_id" value="<%= data[0].user_id %>" hidden/>
+						<input type="file" id="files" multiple /><br /><br />
+						<button id="send">Upload</button>
+						<p id="uploading"></p>
+						<progress value="0" max="100" id="progress"></progress>
+        </div>
+    </div>
+		<script>
+			var firebaseConfig = {
+				apiKey: "AIzaSyByle6QrCt3HBiacG3a2YvnmQ_wxTwG-mM",
+				authDomain: "docker-integration.firebaseapp.com",
+				databaseURL: "https://docker-integration.firebaseio.com",
+				projectId: "docker-integration",
+				storageBucket: "docker-integration.appspot.com",
+				messagingSenderId: "198083086697",
+				appId: "1:198083086697:web:15f71a6455831f7e27d5f8"
+			};
+			// Initialize Firebase
+			firebase.initializeApp(firebaseConfig);
+
+			var files = [];
+			document.getElementById("files").addEventListener("change", function(e) {
+				files = e.target.files;
+			});
+
+			document.getElementById("send").addEventListener("click", function(e) {
+				e.preventDefault();
+				const formData = new FormData();
+				formData.append('photo', files[0]);
+				fetch("/users/upload", {
+					method: "POST",
+					body: formData
+				}).then(response => response.json()).then(result => {
+					console.log(result.result.url);
+					var data = {
+						user_id: document.getElementById("user_id").value,
+						user_profile_picture_url: result.result.url
+					}
+					fetch("/users/userProfilePicture", {
+						method: "PUT",
+						headers: {'Content-Type': 'application/json'},
+						body: JSON.stringify(data)
+					}).then(function(res) {
+						window.location.assign("/users/listar");
+					})
+				})
+			});
+		</script>
+</body>
+</html>
